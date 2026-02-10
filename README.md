@@ -30,7 +30,7 @@ Breaking it down:
 
 ```bash
 # Download the script
-curl -o ~/.claude/hooks/status-line.sh https://raw.githubusercontent.com/YOUR_USERNAME/claude-status-line/main/status-line.sh
+curl -o ~/.claude/hooks/status-line.sh https://raw.githubusercontent.com/Jbonomo38/claude-status-line/main/status-line.sh
 
 # Make it executable
 chmod +x ~/.claude/hooks/status-line.sh
