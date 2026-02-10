@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Test files
+test-*
+
+# Backup files
+*.bak
+*~
