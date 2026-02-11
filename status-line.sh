@@ -7,7 +7,6 @@
 status_input=$(cat)
 
 # Parse JSON fields using grep/sed (no jq dependency)
-used_pct=$(echo "$status_input" | grep -o '"used_percentage"[[:space:]]*:[[:space:]]*[0-9.]*' | grep -o '[0-9.]*' | head -1)
 total_tokens=$(echo "$status_input" | grep -o '"context_window_size"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*' | head -1)
 model_name=$(echo "$status_input" | grep -o '"display_name"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:\s*"\([^"]*\)".*/\1/')
 
@@ -20,19 +19,25 @@ total_input=${total_input:-0}
 total_output=${total_output:-0}
 used_tokens=$((total_input + total_output))
 
-# Parse current turn usage from current_usage object
-input_tokens=$(echo "$status_input" | grep -o '"input_tokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*' | tail -1)
-output_tokens=$(echo "$status_input" | grep -o '"output_tokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*' | tail -1)
-cache_tokens=$(echo "$status_input" | grep -o '"cache_read_input_tokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*' | head -1)
+# Parse cache tokens (session total)
+cache_tokens=$(echo "$status_input" | grep -o '"total_cache_read_input_tokens"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*' | head -1)
 
 # Set default values if parsing fails
-used_pct=${used_pct:-0}
 used_tokens=${used_tokens:-0}
 total_tokens=${total_tokens:-200000}
 model_name=${model_name:-"Claude"}
-input_tokens=${input_tokens:-0}
-output_tokens=${output_tokens:-0}
 cache_tokens=${cache_tokens:-0}
+
+# Use session totals for display (these match the percentage calculation)
+input_tokens=$total_input
+output_tokens=$total_output
+
+# Calculate percentage manually (handles overflow beyond 100%)
+if [ "$total_tokens" -gt 0 ]; then
+    used_pct=$(awk "BEGIN {printf \"%.1f\", ($used_tokens / $total_tokens) * 100}")
+else
+    used_pct="0.0"
+fi
 
 # Function to format numbers (e.g., 84678 → 84.7k)
 format_num() {
