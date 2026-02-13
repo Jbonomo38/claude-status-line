@@ -220,7 +220,8 @@ Built for the [Claude Code](https://claude.com/claude-code) community.
 2. At 85% - Checkpoint automatically requested
 3. At 90% - "Safe to /clear" indicator appears
 4. Run `/clear` - Start fresh conversation
-5. Counters reset to zero
+5. Run `~/reset-tokens` - Reset counters to zero
+6. Continue with fresh context window
 
 ### Warning Indicators
 

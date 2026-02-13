@@ -86,7 +86,10 @@ cat ~/.claude/cache/checkpoint-state.json
 ```
 
 ### Reset Conversation (after checkpoint)
-Just run `/clear` in Claude Code!
+1. Run `/clear` in Claude Code
+2. Run `~/reset-tokens` to reset the status line counters
+
+**Pro tip:** The two-step process ensures accurate token tracking!
 
 ## 🆘 Troubleshooting
 
