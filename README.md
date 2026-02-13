@@ -4,8 +4,13 @@ A beautiful, real-time context window tracker for [Claude Code](https://claude.c
 
 ## ✨ Features
 
-- 📊 **Real-time context window tracking** - See your token usage update as you work
-- 🎨 **Color-coded warnings** - Green (<50%), Yellow (50-80%), Red (>80%)
+- 📊 **Conversation-level tracking** - Automatically resets when you run `/clear`
+- ⚠️ **Smart checkpoint warnings** - Visual alerts when approaching context limits
+  - 🟢 Green (<60%) - Safe zone
+  - 🟡 Yellow (60-80%) - Monitor usage
+  - 🔴 Red (80-90%) - Warning indicator
+  - 🔴 Red (90-95%) - "Consider /checkpoint"
+  - 🔴 **Bold Red (95%+)** - "CHECKPOINT NOW!"
 - 📈 **Detailed metrics** - Input, output, and cache token breakdowns
 - 🚀 **Lightweight** - Pure bash, no dependencies (no jq required!)
 - ⚡ **Fast** - Minimal overhead, updates instantly
@@ -13,16 +18,51 @@ A beautiful, real-time context window tracker for [Claude Code](https://claude.c
 ## 📸 What it looks like
 
 ```
-Context: 36% (33.2k/200.0k) | In: 7 | Out: 3 | Cache: 70.7k | S 4.5
+Context: 36% (33.2k/200.0k) | In: 12.5k | Out: 8.2k | Cache: 70.7k | S 4.5
+Context: 92% (184k/200.0k) | In: 98.5k | Out: 85.5k | Cache: 120k | S 4.5 ⚠️ Consider /checkpoint
 ```
 
 Breaking it down:
-- **Context: 36%** - Percentage of context window used (color-coded)
-- **(33.2k/200.0k)** - Current tokens / Total context window
-- **In: 7** - Input tokens for current turn
-- **Out: 3** - Output tokens for current turn
+- **Context: 36%** - Percentage of context window used (color-coded, conversation-level)
+- **(33.2k/200.0k)** - Conversation tokens / Total context window
+- **In: 12.5k** - Input tokens for this conversation
+- **Out: 8.2k** - Output tokens for this conversation
 - **Cache: 70.7k** - Cache read tokens (prompt caching)
 - **S 4.5** - Model indicator (Sonnet 4.5)
+- **⚠️ Consider /checkpoint** - Warning shown at 90%+ usage
+
+## 🤖 Automatic Checkpoint System
+
+The status line includes an intelligent checkpoint system that helps you manage context usage:
+
+### How It Works
+
+1. **85% Usage** - Status line automatically requests a checkpoint
+2. **Checkpoint Created** - Shows "✅ Checkpoint saved at 87%"
+3. **90%+ Usage** - Shows "Safe to /clear" when checkpoint is available
+4. **95%+ Usage** - Bold "SAFE TO /clear" reminder
+
+### Setup Automatic Checkpoints
+
+```bash
+cd /home/jbono/claude-status-line
+./setup-auto-checkpoint.sh
+```
+
+This enables:
+- ✅ Automatic checkpoint requests at thresholds
+- ✅ Visual indicators showing when it's safe to clear
+- ✅ Checkpoint status tracking
+
+### Manual Checkpoint Trigger
+
+When the status line shows "Consider /checkpoint", run:
+
+```bash
+~/.claude/hooks/checkpoint-executor.sh
+```
+
+This creates a checkpoint file with conversation context at `~/.claude/checkpoints/`.
 
 ## 🚀 Installation
 
@@ -70,17 +110,26 @@ Or manually add to `~/.claude/settings.json`:
 
 ## 🎨 Customization
 
-### Color Thresholds
+### Color Thresholds and Warnings
 
-Edit the script to change when colors appear:
+Edit the script to change when colors and warnings appear:
 
 ```bash
-if [ "$used_pct_int" -lt 50 ]; then
-    color="\033[32m"  # Green - change 50 to your preference
+if [ "$used_pct_int" -lt 60 ]; then
+    color="\033[32m"  # Green - change 60 to your preference
+    warning=""
 elif [ "$used_pct_int" -lt 80 ]; then
     color="\033[33m"  # Yellow - change 80 to your preference
-else
+    warning=""
+elif [ "$used_pct_int" -lt 90 ]; then
     color="\033[31m"  # Red
+    warning=" ⚠️"
+elif [ "$used_pct_int" -lt 95 ]; then
+    color="\033[31m"  # Red
+    warning=" ⚠️ Consider /checkpoint"
+else
+    color="\033[31m\033[1m"  # Bold Red
+    warning=" 🔴 CHECKPOINT NOW!"
 fi
 ```
 
@@ -162,6 +211,25 @@ MIT License - feel free to use and modify!
 ## 🙏 Acknowledgments
 
 Built for the [Claude Code](https://claude.com/claude-code) community.
+
+## 🎯 Usage Patterns
+
+### Normal Workflow
+
+1. Work normally - status shows green
+2. At 85% - Checkpoint automatically requested
+3. At 90% - "Safe to /clear" indicator appears
+4. Run `/clear` - Start fresh conversation
+5. Counters reset to zero
+
+### Warning Indicators
+
+- 🟢 **<60%** - All clear
+- 🟡 **60-80%** - Monitor usage
+- 🔴 **80-85%** - ⚠️ Warning
+- 🔴 **85-90%** - 💾 Creating checkpoint...
+- 🔴 **90-95%** - ✅ Safe to /clear
+- 🔴 **95%+** - 🟢 SAFE TO /clear (bold)
 
 ## 📚 Related
 

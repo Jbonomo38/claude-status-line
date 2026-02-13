@@ -1,20 +1,36 @@
 # Examples
 
-## Different Usage Levels
+## Different Usage Levels with Checkpoint System
 
-### Low Usage (< 50%) - Green
+### Low Usage (<60%) - Green
 ```
 Context: 23% (46.0k/200.0k) | In: 2.5k | Out: 1.2k | Cache: 42.3k | S 4.5
 ```
 
-### Medium Usage (50-80%) - Yellow
+### Medium Usage (60-80%) - Yellow
 ```
 Context: 67% (134.0k/200.0k) | In: 15.0k | Out: 8.5k | Cache: 110.5k | S 4.5
 ```
 
-### High Usage (> 80%) - Red
+### High Usage (80-85%) - Red with Warning
 ```
-Context: 92% (184.0k/200.0k) | In: 45.2k | Out: 23.8k | Cache: 115.0k | S 4.5
+Context: 82% (164.0k/200.0k) | In: 25.0k | Out: 18.5k | Cache: 120.5k | S 4.5 ⚠️
+```
+
+### Checkpoint Requested (85-90%) - Red with Checkpoint Status
+```
+Context: 87% (174.0k/200.0k) | In: 32.2k | Out: 25.3k | Cache: 116.5k | S 4.5 💾 Creating checkpoint...
+Context: 87% (174.0k/200.0k) | In: 32.2k | Out: 25.3k | Cache: 116.5k | S 4.5 ✅ Checkpoint saved at 87%
+```
+
+### Safe to Clear (90-95%) - Red with Clear Suggestion
+```
+Context: 92% (184.0k/200.0k) | In: 45.2k | Out: 23.8k | Cache: 115.0k | S 4.5 ✅ Checkpoint at 87% - Safe to /clear
+```
+
+### Urgent (95%+) - Bold Red with Clear Reminder
+```
+Context: 97% (194.0k/200.0k) | In: 58.5k | Out: 45.2k | Cache: 90.3k | S 4.5 🟢 SAFE TO /clear (Checkpoint at 87%)
 ```
 
 ## Different Models
@@ -68,8 +84,33 @@ Tokens read from prompt cache. This is a good thing! It means:
 - Lower costs
 - Efficient context reuse
 
-### Session Totals
-The percentage and total tokens (e.g., `33.2k/200.0k`) represent the cumulative usage across your entire conversation session.
+### Conversation Totals
+The percentage and total tokens (e.g., `33.2k/200.0k`) represent the cumulative usage for the **current conversation**. When you run `/clear`, these reset to zero automatically.
+
+## Checkpoint Workflow Example
+
+Here's a typical session showing the checkpoint system in action:
+
+```bash
+# Starting fresh conversation
+Context: 15% (30.0k/200.0k) | In: 5.2k | Out: 3.1k | Cache: 21.7k | S 4.5
+
+# ... working on your task ...
+
+# Reaching checkpoint threshold
+Context: 87% (174.0k/200.0k) | In: 89.5k | Out: 84.5k | Cache: 0 | S 4.5 💾 Creating checkpoint...
+
+# Checkpoint complete
+Context: 88% (176.0k/200.0k) | In: 90.1k | Out: 85.9k | Cache: 0 | S 4.5 ✅ Checkpoint saved at 87%
+
+# Reaching clear recommendation
+Context: 93% (186.0k/200.0k) | In: 95.2k | Out: 90.8k | Cache: 0 | S 4.5 ✅ Checkpoint at 87% - Safe to /clear
+
+# User runs /clear
+
+# Fresh start!
+Context: 2% (4.0k/200.0k) | In: 2.5k | Out: 1.5k | Cache: 0 | S 4.5
+```
 
 ## Testing the Script
 
