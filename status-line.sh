@@ -160,11 +160,11 @@ elif [ "$used_pct_int" -lt 90 ]; then
     # Between 85-90%: Request checkpoint if not already done
     color="\033[31m"  # Red
     if [ "$checkpoint_requested" = "true" ]; then
-        warning=" 💾 Creating checkpoint..."
+        warning=" 💾"
     elif [ "$checkpoint_available" = "true" ] && [ "$checkpoint_pct" -ge 80 ]; then
-        warning=" ✅ Checkpoint saved at ${checkpoint_pct}%"
+        warning=" ✅${checkpoint_pct}%"
     else
-        warning=" ⚠️ Checkpoint recommended"
+        warning=" ⚠️ CP"
         # Request checkpoint by updating state
         cat > "$CHECKPOINT_STATE" << EOF
 {
@@ -181,23 +181,28 @@ elif [ "$used_pct_int" -lt 95 ]; then
     # Between 90-95%: Suggest /clear if checkpoint available
     color="\033[31m"  # Red
     if [ "$checkpoint_available" = "true" ] && [ "$checkpoint_pct" -ge 80 ]; then
-        warning=" ✅ Checkpoint at ${checkpoint_pct}% - Safe to /clear"
+        warning=" ✅ Safe /clear"
     elif [ "$checkpoint_requested" = "true" ]; then
-        warning=" 💾 Creating checkpoint... Consider /clear after"
+        warning=" 💾 Then /clear"
     else
-        warning=" 🔴 Checkpoint & /clear recommended"
+        warning=" 🔴 CP+/clear"
     fi
 else
-    # 95%+: Urgent
+    # 95%+: Urgent - use compact format
     color="\033[31m\033[1m"  # Bold Red
     if [ "$checkpoint_available" = "true" ] && [ "$checkpoint_pct" -ge 80 ]; then
-        warning=" 🟢 SAFE TO /clear (Checkpoint at ${checkpoint_pct}%)"
+        warning=" 🟢 /clear OK"
     else
-        warning=" 🔴 CLEAR NOW!"
+        warning=" 🔴 /CLEAR!"
     fi
 fi
 reset="\033[0m"
 
-# Output formatted status line with warnings
-# Format: Context: 42.3% (84.7k/200k) | In: 12.5k | Out: 8.2k | Cache: 64.0k | S 4.5 [WARNING]
-echo -e "${color}Context: ${used_pct}% (${formatted_used}/${formatted_total})${reset} | In: ${formatted_input} | Out: ${formatted_output} | Cache: ${formatted_cache} | ${short_model}${color}${warning}${reset}"
+# For >100% usage, use ultra-compact format
+if [ "$used_pct_int" -gt 100 ]; then
+    # Ultra-compact: just show percentage and critical info
+    echo -e "${color}${used_pct}% OVER LIMIT!${reset} ${formatted_used}/${formatted_total}${color}${warning}${reset}"
+else
+    # Normal format
+    echo -e "${color}${used_pct}%${reset} ${formatted_used}/${formatted_total} | In:${formatted_input} Out:${formatted_output} Cache:${formatted_cache} | ${short_model}${color}${warning}${reset}"
+fi
